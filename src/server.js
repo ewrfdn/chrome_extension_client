@@ -28,29 +28,15 @@ const action = function (ws, req) {
   wsConnectMap[connectionId] = { ws }
   ws.send('connect to success')
   ws.on('message', function (msg) {
+    console.log('receiveMessage:',msg)
     try {
-      console.log('saveMsg:',msg)
       msg = JSON.parse(msg)
     } catch (e) {
     }
-    if (msg.directive === 'getXpath'){
       BrowserWindow.getAllWindows()[0].webContents.send(
-        'get-xpath',
+        'receive',
         msg
       )
-      ws.send(JSON.stringify({directive:'cancelSelect'}))
-    }else if (msg.directive === 'getPageData'){
-      BrowserWindow.getAllWindows()[0].webContents.send(
-        'get-data',
-        msg
-      )
-    } else if(msg.directive = 'clickByXpath'){
-      BrowserWindow.getAllWindows()[0].webContents.send(
-        'click-by-xpath',
-        msg
-      )
-    }
-      
   })
   let timer = setInterval(() => {
     ws.send(`keepalive${new Date()}`)
