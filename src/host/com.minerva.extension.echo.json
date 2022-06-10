@@ -1,0 +1,10 @@
+
+{
+  "name": "com.minerva.extension",
+  "description": "minerav chrome extension",
+  "path": "HOST_PATH",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://iefcbhmfakhpkbaebffgnjmgloipgpbn/"
+  ]
+}

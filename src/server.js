@@ -32,6 +32,7 @@ const action = function (ws, req) {
     try {
       msg = JSON.parse(msg)
     } catch (e) {
+      
     }
       BrowserWindow.getAllWindows()[0].webContents.send(
         'receive',
@@ -39,7 +40,8 @@ const action = function (ws, req) {
       )
   })
   let timer = setInterval(() => {
-    ws.send(`keepalive${new Date()}`)
+    ws.send(JSON.stringify({data:`keepalive${new Date()}`})
+    )
   }, 5000)
 
   ws.on('close', function (e) {

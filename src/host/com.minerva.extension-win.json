@@ -1,0 +1,12 @@
+
+{
+  "name": "com.minerva.extension",
+  "description": "minerva chrome extension",
+  "path": "native-messaging-example-host.bat",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://iefcbhmfakhpkbaebffgnjmgloipgpbn/"
+  ]
+}
+
+

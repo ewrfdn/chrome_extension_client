@@ -1,0 +1,110 @@
+
+
+from ast import Not
+from email import message
+import sys
+import signal
+import socket
+import struct
+import urllib
+import time
+import multiprocessing 
+import threading
+# if sys.platform == "win32":
+#   import os, msvcrt
+#   msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+#   msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+
+# Helper function that sends a message to the webapp.
+def send_message(message):
+   # Write message size.
+  # res= struct.pack('I', len(message))
+  # sys.stdout.buffer.write(res)
+  # # Write the message itself.
+  # # sys.stdout.buffer.write(message.encode('utf-8'))
+  # sys.stdout.write(message)
+  # sys.stdout.flush()
+  sys.stdout.buffer.write(struct.pack('=I', len(message.encode("utf-8"))))
+  
+  # Write the message itself.
+  sys.stdout.buffer.write(struct.pack(str(len(message.encode("utf-8")))+"s", message.encode("utf-8")))
+  sys.stdout.flush()
+
+def read_thread_func(queue):
+  while 1:
+    time.sleep(0.1)
+    text_length_bytes = sys.stdin.read(4)
+    if len(text_length_bytes) == 0:
+      sys.exit(0)
+    text_length = struct.unpack('i', text_length_bytes)[0]
+    text = sys.stdin.read(text_length).decode('utf-8')
+    send_message('{"echo": %s}' % text)
+
+class SocketServe:
+      local_ip = '0.0.0.0'
+      port = 3059
+      def __init__(self,port=3059):
+        if port is not None:
+          self.port = port
+        self.connections = []
+        self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.socket.bind((self.local_ip,self.port))
+        self.socket.listen(1)
+      def connect(self,queue):
+          while True:
+            time.sleep(0.1)
+            conn, addr = self.socket.accept()
+            sock_name = conn.getsockname()
+            msg = urllib.parse.unquote(conn.recv(8192).decode('utf-8'))
+            queue.put(msg)
+            self.connections.append(conn)
+
+def consumer(q):
+    while True:
+        res=q.get()
+        send_message(res)
+        time.sleep(0.1)
+
+
+def read_thread_func1():
+  while True:
+    # Read the message length (first 4 bytes).
+    text_length_bytes = sys.stdin.buffer.read(4)
+    
+    if not text_length_bytes:
+      sys.exit(0)
+    
+    # Unpack message length as 4 byte integer.
+    if (sys.byteorder == 'big'):
+      text_length = int.from_bytes(text_length_bytes, byteorder='big')
+    else:
+      text_length = int.from_bytes(text_length_bytes, byteorder='little')
+    
+    # Read the text (JSON object) of the message.
+    text = sys.stdin.read(text_length)
+      
+    if (os.path.exists('./data')):
+      with open('./data', 'w') as f:
+        f.write(text)
+        f.close()
+    else:
+      with open('./data', 'x') as f:
+        f.write(text)
+        f.close()
+def Main():
+      send_message("23333333333333333333333")
+      server =  SocketServe()
+      action_queue = multiprocessing.Queue()
+      result_queue = multiprocessing.Queue()
+      server_thread = threading.Thread(target=server.connect,args=(action_queue,))
+      server_thread.daemon = True
+      consumer_thread = threading.Thread(target=consumer,args=(action_queue,))
+      consumer_thread.daemon = True
+      server_thread.start()
+      consumer_thread.start()
+      read_thread_func(result_queue)
+      sys.exit(0)
+   
+    
+if __name__ == '__main__':
+  Main()

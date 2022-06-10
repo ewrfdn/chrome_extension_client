@@ -22,8 +22,19 @@
     <button
       @click="sendAction({ directive: 'setInputValue', data: { tabId: tabId, xpath: xpath, selector: selector, value: true } })">设置checkbox</button>
     <button
-      @click="sendAction({ directive: 'setInputValue', data: { tabId: tabId, xpath: xpath, selector: selector, value: 23333 } })">设置下拉框</button>
-
+      @click="sendAction({ directive: 'element.selectByIndex', data: { tabId: tabId, xpath: xpath, selector: selector, index:0  } })">设置下拉框(index)</button>
+  <button
+      @click="sendAction({ directive: 'element.select', data: { tabId: tabId, xpath: xpath, selector: selector, items:['Nothing']  } })">设置下拉框(匹配选项)</button>
+    <br />
+      <button
+      @click="sendAction({ directive: 'element.getSelectOptions', data: { tabId: tabId, xpath: xpath, selector: selector } })">获取下拉选项</button>
+       <button
+      @click="sendAction({ directive: 'element.getBoundingBox', data: { tabId: tabId, xpath: xpath, selector: selector } })">获取boundingBox</button>
+       <button
+      @click="sendAction({ directive: 'element.getText', data: { tabId: tabId, xpath: xpath, selector: selector } })">获取text</button>
+       <button
+      @click="sendAction({ directive: 'element.getHtml', data: { tabId: tabId, xpath: xpath, selector: selector } })">获取html</button>
+      
     <br />
     <span>xpath</span> <input v-model="xpath" />
     <span>selector</span> <input v-model="selector" />
@@ -31,7 +42,7 @@
     <span>url</span> <input v-model="url" />
 
     <button @click="getData()">获取数据</button>
-    <button @click="toNextPage()">点击元素</button>
+    <button @click="sendAction({ directive: 'element.click', data: { tabId: tabId, xpath: xpath, selector: selector } })">点击元素</button>
     <button @click="sendAction({ directive: 'scroll', data: { url: url, scrollX: Infinity } })">滚动到底部</button>
     <button @click="sendAction({ directive: 'executeScript', data: { url: url, code: 'alert(2333)' } })">执行脚本</button>
 
@@ -74,12 +85,19 @@ export default {
       ipcRenderer.send("send-action", JSON.stringify(arg));
     },
     toNextPage() {
+      console.log("send", {
+          directive: "element.click",
+          data: {
+            url: this.url,
+            xpath: this.xpath,
+          },
+        })
       ipcRenderer.send(
         "send-action",
         JSON.stringify({
           directive: "element.click",
           data: {
-            url: this.url,
+            tabId: this.tabId,
             xpath: this.xpath,
           },
         })
