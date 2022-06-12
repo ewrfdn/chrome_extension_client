@@ -4,7 +4,9 @@
  
 import socket
 import time
- 
+import base64
+import threading
+
 class Client(object):
 
     def __init__(self, host, port, timeout = 5):
@@ -42,21 +44,28 @@ class Client(object):
             if result is not None:
                 raise Exception('SEND ERROR:')
             else:
-                # 接收 
-                ret = ''
-                try:
-                    while True:
-                        buffer = self.sock.recv(2048)
-                        if buffer: 
-                            ret += buffer
-                        else:
-                            break
-                except Exception as e:
-                    raise Exception('RECV ERROR:' + str(e))
+                pass
         return ret
-
+    def receive(self):
+        ret = ''
+        try:
+            while True:
+                buffer = self.sock.recv(2048)
+                buffer=buffer.decode('utf-8')
+                print('buffer')
+                if buffer: 
+                    ret += buffer
+                else:
+                    break
+                print(ret)
+        except Exception as e:
+            raise Exception('RECV ERROR:' + str(e))
 client = Client('127.0.0.1',3059)
-while True:
-#   client.send("{ \"directive\": 'browser.open', \"data\": { \"url\",'https://www.baidu.com/' } }")
-  client.send('1122ww')
-  time.sleep(1)
+text = '{"directive": "browser.open", "data": { "url":"https://www.baidu.com" } }'
+consumer_thread = threading.Thread(target=client.receive,args=())
+consumer_thread.start()
+client.send(text)
+time.sleep(0.5)
+print('2333')
+client.send(text)
+#   client.send()
